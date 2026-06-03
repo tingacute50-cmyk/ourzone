@@ -1,232 +1,577 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Secure Chat</title>
-    <!-- Tailwind CSS for modern mobile-first styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons for clean UI dashboard iconography -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Premium Chat Hub</title>
     <style>
-        /* Custom scrollbar adjustments for premium interface feel */
-        ::-webkit-scrollbar {
-            width: 4px;
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #151f32;
+            --sidebar-bg: #0e1624;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --gold: #f59e0b;
+            --user-color: #3b82f6;
+            --error-color: #f87171;
+            --success-color: #4ade80;
+            --modal-overlay: rgba(0, 0, 0, 0.75);
         }
-        ::-webkit-scrollbar-track {
-            background: #111827;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 2px;
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        
+        .hidden { display: none !important; }
+
+        /* --- AUTHENTICATION PORTAL --- */
+        .login-container { background: var(--panel-bg); padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #22314d; }
+        .login-tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 2px solid #22314d; }
+        .tab-btn { flex: 1; padding: 12px; background: none; border: none; color: var(--text-muted); font-size: 0.95rem; font-weight: bold; cursor: pointer; }
+        .tab-btn.active { color: var(--text-main); border-bottom: 3px solid var(--user-color); }
+        
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background: #0b0f19; border: 1px solid #22314d; border-radius: 8px; color: white; font-size: 1rem; }
+        .form-group input:focus { border-color: var(--user-color); outline: none; }
+        
+        .login-btn { width: 100%; padding: 14px; background: var(--user-color); border: none; border-radius: 8px; color: white; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 0.5rem; }
+        .toggle-auth-mode { text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
+        .toggle-auth-mode span { color: var(--user-color); font-weight: 600; }
+        
+        .notification { padding: 10px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; display: none; }
+        .notification.error { background: rgba(239, 68, 68, 0.15); color: var(--error-color); border: 1px solid var(--error-color); display: block; }
+        .notification.success { background: rgba(74, 222, 128, 0.15); color: var(--success-color); border: 1px solid var(--success-color); display: block; }
+
+        /* --- CHAT SYSTEM INTERFACE --- */
+        .chat-container { width: 100vw; height: 100vh; background: var(--panel-bg); display: flex; position: relative; overflow: hidden; }
+        
+        /* Sidebar Menu Layout */
+        .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid #1e2d44; display: flex; flex-direction: column; z-index: 10; transition: transform 0.3s ease; }
+        .user-profile-bar { padding: 16px; background: #131d2f; border-bottom: 1px solid #1e2d44; display: flex; justify-content: space-between; align-items: center; }
+        .logout-btn { padding: 6px 12px; background: #22314d; border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+        
+        .channel-section { padding: 16px; border-bottom: 1px solid #1e2d44; }
+        .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 12px; font-weight: 700; }
+        .channel-item { padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; margin-bottom: 6px; font-size: 0.95rem; color: #94a3b8; }
+        .channel-item.active { background: #1b263b; font-weight: 600; color: white; }
+        
+        .user-list { flex: 1; overflow-y: auto; padding: 6px 12px; }
+        .user-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; margin-bottom: 4px; font-size: 0.9rem; cursor: pointer; color: #94a3b8; transition: background 0.2s; }
+        .user-item:hover { background: rgba(255, 255, 255, 0.05); }
+        .user-item.active { background: rgba(59, 130, 246, 0.15); color: white; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .status-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-right: 10px; }
+        
+        .badge { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-left: auto; letter-spacing: 0.5px; }
+        .badge.premium { background: var(--gold); color: #000; }
+        .badge.verified { background: var(--user-color); color: #fff; }
+        .badge.blocked-tag { background: #475569; color: #cbd5e1; }
+
+        /* Window Chat Container Panels */
+        .chat-window { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; }
+        .chat-header { padding: 14px 16px; background: var(--panel-bg); border-bottom: 1px solid #1e2d44; display: flex; align-items: center; gap: 12px; }
+        
+        .menu-toggle-btn { display: none; background: #1e2d44; border: none; color: white; padding: 8px 12px; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+
+        .messages-display { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .message { max-width: 80%; padding: 10px 14px; border-radius: 12px; line-height: 1.4; font-size: 0.95rem; }
+        .message.system { background: #1a2436; color: #94a3b8; align-self: center; text-align: center; max-width: 90%; font-size: 0.8rem; border-radius: 6px; }
+        .message.received { background: var(--panel-bg); align-self: flex-start; border-top-left-radius: 2px; }
+        .message.sent { background: var(--user-color); align-self: flex-end; border-top-right-radius: 2px; }
+        
+        .message-sender { font-size: 0.7rem; color: #94a3b8; margin-bottom: 4px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .message.sent .message-sender { color: #bfdbfe; }
+        .inline-verified-tag { font-size: 0.6rem; color: #60a5fa; font-weight: bold; }
+        
+        .chat-input-area { padding: 14px; background: var(--panel-bg); border-top: 1px solid #1e2d44; display: flex; gap: 8px; align-items: center; }
+        .chat-input-area input { flex: 1; padding: 12px; background: #0b0f19; border: 1px solid #1e2d44; border-radius: 24px; color: white; font-size: 0.95rem; text-indent: 6px; }
+        .chat-input-area button { padding: 12px 20px; background: var(--user-color); border: none; border-radius: 24px; color: white; font-weight: bold; cursor: pointer; }
+        
+        .locked-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #64748b; gap: 12px; background: #090d16; text-align: center; padding: 24px; }
+        .lock-icon { font-size: 2.5rem; }
+
+        /* --- USER ACTION MODAL SHEET --- */
+        .modal-mask { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--modal-overlay); display: flex; justify-content: center; align-items: center; z-index: 100; padding: 20px; }
+        .profile-modal { background: var(--panel-bg); border: 1px solid #22314d; border-radius: 16px; width: 100%; max-width: 360px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8); animation: fadeIn 0.2s ease-out; }
+        .modal-header { padding: 20px; background: #131d2f; border-bottom: 1px solid #1e2d44; text-align: center; position: relative; }
+        .modal-close-btn { position: absolute; right: 15px; top: 15px; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+        .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .modal-info-row { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
+        
+        .modal-action-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-pvt { background: var(--user-color); }
+        .btn-pvt:hover { background: #2563eb; }
+        .btn-ignore { background: #475569; }
+        .btn-ignore:hover { background: #334155; }
+        .btn-block { background: #b91c1c; }
+        .btn-block:hover { background: #991b1b; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* Sidebar Responsive Overlay Screen elements */
+        @media (max-width: 768px) {
+            .menu-toggle-btn { display: block; }
+            .sidebar { position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-100%); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .sidebar-overlay { display: none; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 5; }
+            .sidebar-overlay.mobile-open { display: block; }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans antialiased flex justify-center items-center min-h-screen">
+<body>
 
-    <!-- Mobile Screen Wrapper Container -->
-    <div class="w-full max-w-md h-[100vh] sm:h-[85vh] bg-gray-950 sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border border-gray-800">
+    <div class="login-container" id="loginPage">
+        <div class="login-tabs">
+            <button class="tab-btn active" id="userTab" onclick="switchRoleTab('user')">User Access Portal</button>
+            <button class="tab-btn" id="adminTab" onclick="switchRoleTab('admin')">Admin Hub</button>
+        </div>
+
+        <h2 id="portalTitle" style="margin-bottom: 1.25rem; text-align: center; font-size: 1.2rem;">Sign In</h2>
+        <div id="authNotify" class="notification"></div>
+
+        <form id="authForm" onsubmit="handleAuthSubmit(event)">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" required placeholder="Enter username...">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            <div class="form-group hidden" id="verificationGroup">
+                <label>Account Level Privileges</label>
+                <select id="verificationStatus">
+                    <option value="unverified">Restricted Account (Masked as Verified)</option>
+                    <option value="verified">Full Unlocked Account Room Rights</option>
+                </select>
+            </div>
+            <button type="submit" class="login-btn" id="submitBtn">Sign In</button>
+        </form>
+
+        <div class="toggle-auth-mode" id="toggleAuthMode" onclick="toggleAuthMode()">
+            Don't have an account? <span>Register here</span>
+        </div>
+    </div>
+
+    <div class="chat-container hidden" id="chatPage">
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
         
-        <!-- ==================== SCREEN 1: SECURE AUTHENTICATION ==================== -->
-        <div id="auth-screen" class="flex-1 flex flex-col justify-center px-6 py-12 transition-all duration-300">
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 mb-4 shadow-lg shadow-indigo-500/30">
-                    <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
+        <div class="sidebar" id="sidebarMenu">
+            <div class="user-profile-bar">
+                <div>
+                    <span id="currentUserName" style="font-weight: bold; font-size:0.95rem;">User</span>
+                    <div id="currentUserBadge" class="badge verified" style="margin-top:4px; margin-left:0; display:inline-block;">VERIFIED</div>
                 </div>
-                <h2 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                    Premium Chat Room
-                </h2>
-                <p class="text-sm text-gray-400 mt-2">Enter your temporary username to join the public space</p>
+                <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
 
-            <div class="space-y-4">
+            <div class="channel-section">
+                <div class="section-title">Rooms</div>
+                <div class="channel-item active" id="roomMain" onclick="switchRoom('main')">🌐 Main Open Chat</div>
+                <div class="channel-item" id="roomInbox" onclick="switchRoom('inbox')">📥 Personal Inbox</div>
+            </div>
+
+            <div class="channel-section" style="flex: 1; display:flex; flex-direction:column; overflow:hidden;">
+                <div class="section-title" id="userListTitle">Active Channels</div>
+                <div class="user-list" id="usersListContainer"></div>
+            </div>
+        </div>
+
+        <div class="chat-window">
+            <div class="chat-header">
+                <button class="menu-toggle-btn" onclick="toggleMobileSidebar()">☰ Menu</button>
                 <div>
-                    <label for="username" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Username</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500">
-                            <i data-lucide="user" class="w-5 h-5"></i>
-                        </span>
-                        <input type="text" id="username" autocomplete="off" placeholder="e.g., GuestUser_99" 
-                            class="block w-full pl-10 pr-3 py-3 bg-gray-900 border border-gray-700 rounded-xl text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-                    </div>
+                    <h4 id="activeRoomTitle" style="font-size: 1rem;">🌐 Main Open Chat</h4>
                 </div>
-                <button onclick="handleLogin()" class="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-950 focus:ring-indigo-500 transform active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">
-                    Enter Chat Dashboard
+            </div>
+
+            <div id="chatActiveView" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                <div class="messages-display" id="messagesContainer"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="messageInput" placeholder="Write message...">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+
+            <div id="chatLockedView" class="locked-screen hidden">
+                <div class="lock-icon">🔒</div>
+                <h3 style="font-size: 1.15rem; color:#f8fafc;">Verification Required</h3>
+                <p style="font-size: 0.85rem; max-width:280px;">Only cleared verified accounts can broadcast to Main Open Chat. Please open a user profile to send a <b>Private Message</b>.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-mask hidden" id="profileModal">
+        <div class="profile-modal">
+            <div class="modal-header">
+                <button class="modal-close-btn" onclick="closeProfileModal()">✕</button>
+                <h3 id="modalUserTitle" style="font-size:1.15rem;">User Profile</h3>
+                <p id="modalUserSubtitle" style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Status: Online</p>
+            </div>
+            <div class="modal-body">
+                <div class="modal-info-row">
+                    <span>Account Standing</span>
+                    <span style="color:var(--success-color); font-weight:bold;">✓ Verified Account</span>
+                </div>
+                <div class="modal-info-row">
+                    <span>Privacy Filter</span>
+                    <span id="modalFilterStatus" style="color:var(--text-muted);">None</span>
+                </div>
+                
+                <button class="modal-action-btn btn-pvt" id="modalPvtBtn">
+                    💬 Private Message (1-to-1)
+                </button>
+                <button class="modal-action-btn btn-ignore" id="modalIgnoreBtn" onclick="toggleIgnoreUser()">
+                    👁️ Ignore User
+                </button>
+                <button class="modal-action-btn btn-block" id="modalBlockBtn" onclick="toggleBlockUser()">
+                    🚫 Block User
                 </button>
             </div>
         </div>
-
-        <!-- ==================== SCREEN 2: MAIN CHAT INTERFACE ==================== -->
-        <div id="main-screen" class="hidden flex-1 flex flex-col h-full opacity-0 transition-all duration-300">
-            
-            <!-- Dynamic Chat Room App Header -->
-            <header class="bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white tracking-wider" id="user-avatar">
-                        U
-                    </div>
-                    <div>
-                        <h1 class="text-sm font-bold text-white tracking-wide" id="display-name">Loading...</h1>
-                        <div class="flex items-center space-x-1.5">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                            <span class="text-[11px] text-gray-400 font-medium">Global Secure Channel</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Profile Action Button Options -->
-                <div class="relative">
-                    <button onclick="toggleActionMenu()" class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors">
-                        <i data-lucide="more-vertical" class="w-5 h-5"></i>
-                    </button>
-                    <!-- Action Modal Dropdown Menu Layout -->
-                    <div id="action-menu" class="hidden absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-800 rounded-xl shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                        <button onclick="openProfileSettings()" class="w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 flex items-center space-x-2">
-                            <i data-lucide="settings" class="w-4 h-4 text-gray-400"></i>
-                            <span>Profile Settings</span>
-                        </button>
-                        <button onclick="viewBlockedUsers()" class="w-full text-left px-4 py-2.5 text-sm text-gray-300 hover:bg-gray-800 flex items-center space-x-2">
-                            <i data-lucide="ban" class="w-4 h-4 text-gray-400"></i>
-                            <span>Blocked Users</span>
-                        </button>
-                        <hr class="border-gray-800 my-1">
-                        <button onclick="handleLogout()" class="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-gray-800 flex items-center space-x-2">
-                            <i data-lucide="log-out" class="w-4 h-4 text-red-400"></i>
-                            <span>Leave Room</span>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Main Message Streaming Board Box -->
-            <main id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-950/50">
-                <!-- Live structural simulation layouts inside the app space -->
-                <div class="flex items-end space-x-2 max-w-[85%]">
-                    <div class="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold text-white">S</div>
-                    <div class="bg-gray-900 border border-gray-800 text-gray-200 p-3 rounded-2xl rounded-bl-none shadow-sm">
-                        <p class="text-[11px] font-semibold text-purple-400 mb-1">Server Bot</p>
-                        <p class="text-sm">Welcome to your clean premium chat preview! This frontend demo link is ideal for evaluating core button click triggers, menus, UI design, and responsive elements on mobile screens.</p>
-                        <span class="block text-[10px] text-gray-500 text-right mt-1">System</span>
-                    </div>
-                </div>
-            </main>
-
-            <!-- Bottom Interactive Input Tray Bar -->
-            <footer class="p-3 bg-gray-900 border-t border-gray-800">
-                <form id="chat-form" onsubmit="sendMessage(event)" class="flex items-center space-x-2">
-                    <input type="text" id="message-input" autocomplete="off" placeholder="Write an encrypted message..." 
-                        class="flex-1 bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent">
-                    <button type="submit" class="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 active:scale-95 transition-all shadow-md shadow-indigo-600/10">
-                        <i data-lucide="send" class="w-5 h-5"></i>
-                    </button>
-                </form>
-            </footer>
-        </div>
-
     </div>
 
-    <!-- Embedded System Controller Scripts -->
     <script>
-        // Core state architecture tracking validation flags
-        let currentUser = "";
+        let currentRole = 'user';
+        let authMode = 'login';
+        let currentUser = null;
+        let activeRoom = 'main'; // 'main' or 'inbox'
+        let activeInboxPartner = null; 
+        let selectedModalUser = null; // Tracks which user card was clicked for the pop-up modal
 
-        // Verification validation logic routine trigger
-        function handleLogin() {
-            const usernameInput = document.getElementById('username');
-            const username = usernameInput.value.trim();
+        const userDatabase = {
+            users: [
+                { username: "Renuka", password: "123", status: "unverified" }, 
+                { username: "Sarah", password: "123", status: "verified" }
+            ],
+            admins: [{ username: "Admin", password: "123", status: "admin" }]
+        };
 
-            if (!username) {
-                alert("Please provide a valid nickname string entry to launch safely.");
+        // System representation tracking bots & action states
+        const premiumBots = [
+            { username: 'VIP_Elena✨', status: 'premium', isBlocked: false, isIgnored: false },
+            { username: 'Mark_Premium👑', status: 'premium', isBlocked: false, isIgnored: false }
+        ];
+
+        let globalMainMessages = [
+            { sender: 'VIP_Elena✨', text: 'Welcome to the global open server feed channel!' }
+        ];
+        
+        let privateInboxDatabase = {
+            'VIP_Elena✨': [{ sender: 'VIP_Elena✨', text: 'Hey! This is our exclusive 1-to-1 private chat inbox window.' }],
+            'Mark_Premium👑': [{ sender: 'Mark_Premium👑', text: 'Hello! Drop me a private message here inside your secure feed loop.' }]
+        };
+
+        function toggleMobileSidebar() {
+            document.getElementById('sidebarMenu').classList.toggle('mobile-open');
+            document.getElementById('sidebarOverlay').classList.toggle('mobile-open');
+        }
+
+        function switchRoleTab(role) {
+            currentRole = role;
+            const tabs = document.getElementById('userTab').parentElement.children;
+            tabs[0].classList.toggle('active', role === 'user');
+            tabs[1].classList.toggle('active', role === 'admin');
+            clearNotification();
+            updateFormTitles();
+        }
+
+        function toggleAuthMode() {
+            authMode = (authMode === 'login') ? 'register' : 'login';
+            clearNotification();
+            updateFormTitles();
+        }
+
+        function updateFormTitles() {
+            const portalTitle = document.getElementById('portalTitle');
+            const submitBtn = document.getElementById('submitBtn');
+            const toggleLink = document.getElementById('toggleAuthMode');
+            const verificationGroup = document.getElementById('verificationGroup');
+
+            if (authMode === 'login') {
+                portalTitle.innerText = currentRole === 'admin' ? "Sign In - Admin Panel" : "Sign In";
+                submitBtn.innerText = "Sign In";
+                toggleLink.innerHTML = "Don't have an account? <span>Register</span>";
+                verificationGroup.classList.add('hidden');
+            } else {
+                portalTitle.innerText = currentRole === 'admin' ? "Create Admin Account" : "Create Profile";
+                submitBtn.innerText = "Register Account";
+                toggleLink.innerHTML = "Have an account? <span>Sign in</span>";
+                if (currentRole === 'user') verificationGroup.classList.remove('hidden');
+            }
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('username').value.trim();
+            const passwordInput = document.getElementById('password').value;
+            const verificationTier = document.getElementById('verificationStatus').value;
+            const targetDb = (currentRole === 'admin') ? userDatabase.admins : userDatabase.users;
+            
+            const accountFound = targetDb.find(u => u.username.toLowerCase() === usernameInput.toLowerCase());
+
+            if (authMode === 'register') {
+                if (accountFound) { return showNotification('error', 'Username taken!'); }
+                const newAccount = { username: usernameInput, password: passwordInput, status: (currentRole === 'admin') ? 'admin' : verificationTier };
+                targetDb.push(newAccount);
+                showNotification('success', 'Profile created! Please log in.');
+                authMode = 'login'; updateFormTitles(); document.getElementById('password').value = '';
                 return;
+            } else {
+                if (!accountFound || accountFound.password !== passwordInput) {
+                    return showNotification('error', 'Wrong username or password!');
+                }
+                currentUser = accountFound;
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('chatPage').classList.remove('hidden');
+                initializeChatRoom();
+            }
+        }
+
+        function initializeChatRoom() {
+            document.getElementById('currentUserName').innerText = currentUser.username;
+            activeInboxPartner = premiumBots[0].username; 
+            switchRoom('main');
+        }
+
+        /* --- PROFILE POP-UP MODAL ACTIONS --- */
+        function openProfileModal(username) {
+            // Find target bot context object reference
+            const bot = premiumBots.find(b => b.username === username);
+            if (!bot) return; // Prevent action modal loops on yourself
+            
+            selectedModalUser = bot;
+            document.getElementById('modalUserTitle').innerText = bot.username;
+            
+            // Render filter standing strings
+            const filterEl = document.getElementById('modalFilterStatus');
+            if (bot.isBlocked) { filterEl.innerText = "Blocked"; filterEl.style.color = "var(--error-color)"; }
+            else if (bot.isIgnored) { filterEl.innerText = "Ignored"; filterEl.style.color = "var(--gold)"; }
+            else { filterEl.innerText = "Active / None"; filterEl.style.color = "var(--text-muted)"; }
+
+            // Bind click handler specifically to target the correct 1-to-1 routing execution
+            document.getElementById('modalPvtBtn').onclick = function() {
+                closeProfileModal();
+                startPrivateChatWith(bot.username);
+            };
+
+            // Toggle active string label button details
+            document.getElementById('modalIgnoreBtn').innerText = bot.isIgnored ? "👁️ Unignore User" : "👁️ Ignore User";
+            document.getElementById('modalBlockBtn').innerText = bot.isBlocked ? "🚫 Unblock User" : "🚫 Block User";
+
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+            selectedModalUser = null;
+        }
+
+        function startPrivateChatWith(username) {
+            activeInboxPartner = username;
+            switchRoom('inbox');
+        }
+
+        function toggleIgnoreUser() {
+            if (!selectedModalUser) return;
+            selectedModalUser.isIgnored = !selectedModalUser.isIgnored;
+            if (selectedModalUser.isIgnored) selectedModalUser.isBlocked = false; // block takes precedence
+            closeProfileModal();
+            renderUserSidePanel();
+            renderMessages();
+        }
+
+        function toggleBlockUser() {
+            if (!selectedModalUser) return;
+            selectedModalUser.isBlocked = !selectedModalUser.isBlocked;
+            if (selectedModalUser.isBlocked) selectedModalUser.isIgnored = false;
+            closeProfileModal();
+            renderUserSidePanel();
+            renderMessages();
+        }
+
+        /* --- RENDER SIDEBAR USER LIST --- */
+        function renderUserSidePanel() {
+            const listContainer = document.getElementById('usersListContainer');
+            const titleContainer = document.getElementById('userListTitle');
+            listContainer.innerHTML = '';
+
+            if (currentUser.status === 'admin') {
+                titleContainer.innerText = "Admin Database View";
+                userDatabase.users.forEach(user => {
+                    listContainer.innerHTML += `
+                        <div class="user-item">
+                            <div class="status-dot"></div>
+                            <span>${user.username}</span>
+                            <span class="badge verified">${user.status === 'unverified' ? 'UNVERIFIED' : 'VERIFIED'}</span>
+                        </div>`;
+                });
+            } else {
+                if (activeRoom === 'main') {
+                    titleContainer.innerText = "Online Users (Tap to View)";
+                    // Render yourself
+                    listContainer.innerHTML = `
+                        <div class="user-item" style="background: rgba(59, 130, 246, 0.1)">
+                            <div class="status-dot" style="background:#3b82f6;"></div>
+                            <span>${currentUser.username} (You)</span>
+                            <span class="badge verified">VERIFIED</span>
+                        </div>`;
+                    
+                    // Render premium bots (Clicking opens modal)
+                    premiumBots.forEach(bot => {
+                        let badgeHTML = `<span class="badge premium">PREMIUM</span>`;
+                        if (bot.isBlocked) badgeHTML = `<span class="badge blocked-tag">BLOCKED</span>`;
+                        else if (bot.isIgnored) badgeHTML = `<span class="badge blocked-tag" style="color:var(--gold);">IGNORED</span>`;
+
+                        listContainer.innerHTML += `
+                            <div class="user-item" onclick="openProfileModal('${bot.username}')">
+                                <div class="status-dot" style="${bot.isBlocked ? 'background:#475569;' : ''}"></div>
+                                <span>${bot.username}</span>
+                                ${badgeHTML}
+                            </div>`;
+                    });
+                } else {
+                    // Inbox View setup: Directly lists partners for true 1-to-1 tracking toggle channels
+                    titleContainer.innerText = "Select 1-to-1 Chat";
+                    premiumBots.forEach(bot => {
+                        const isActive = (activeInboxPartner === bot.username) ? 'active' : '';
+                        let statusText = bot.isBlocked ? 'BLOCKED' : 'CHAT';
+                        
+                        listContainer.innerHTML += `
+                            <div class="user-item ${isActive}" onclick="selectInboxPartner('${bot.username}')">
+                                <div class="status-dot" style="${bot.isBlocked ? 'background:#475569;' : ''}"></div>
+                                <span>${bot.username}</span>
+                                <span class="badge premium" style="${bot.isBlocked ? 'background:#475569; color:white;' : ''}">${statusText}</span>
+                            </div>`;
+                    });
+                }
+            }
+        }
+
+        function selectInboxPartner(partnerName) {
+            activeInboxPartner = partnerName;
+            document.getElementById('activeRoomTitle').innerText = `📥 1-to-1 with ${partnerName}`;
+            renderUserSidePanel();
+            renderMessages();
+            if (window.innerWidth <= 768) toggleMobileSidebar();
+        }
+
+        function switchRoom(roomType) {
+            activeRoom = roomType;
+            document.getElementById('roomMain').classList.toggle('active', roomType === 'main');
+            document.getElementById('roomInbox').classList.toggle('active', roomType === 'inbox');
+
+            const activeView = document.getElementById('chatActiveView');
+            const lockedView = document.getElementById('chatLockedView');
+            const headerTitle = document.getElementById('activeRoomTitle');
+
+            if (roomType === 'main') {
+                headerTitle.innerText = "🌐 Main Open Chat";
+                if (currentUser.status === 'unverified') {
+                    activeView.classList.add('hidden');
+                    lockedView.classList.remove('hidden');
+                } else {
+                    activeView.classList.remove('hidden');
+                    lockedView.classList.add('hidden');
+                }
+            } else {
+                headerTitle.innerText = `📥 1-to-1 with ${activeInboxPartner}`;
+                activeView.classList.remove('hidden');
+                lockedView.classList.add('hidden');
             }
 
-            currentUser = username;
-            
-            // Render interface transitions dynamically inside the local document
-            document.getElementById('auth-screen').classList.add('hidden');
-            const mainScreen = document.getElementById('main-screen');
-            mainScreen.classList.remove('hidden');
-            setTimeout(() => {
-                mainScreen.classList.add('opacity-100');
-            }, 50);
-
-            // Set custom display variables 
-            document.getElementById('display-name').textContent = currentUser;
-            document.getElementById('user-avatar').textContent = currentUser.substring(0, 2).toUpperCase();
-
-            // Push notification entry layout simulation
-            appendSystemMessage(`${currentUser} connected securely to the public channel workspace logs.`);
+            renderUserSidePanel();
+            renderMessages();
         }
 
-        // Messaging generation deployment loop handler
-        function sendMessage(e) {
-            e.preventDefault();
-            const input = document.getElementById('message-input');
-            const messageText = input.value.trim();
+        function renderMessages() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
 
-            if (!messageText) return;
+            if (activeRoom === 'main') {
+                globalMainMessages.forEach(msg => {
+                    const botRef = premiumBots.find(b => b.username === msg.sender);
+                    // Filter rule: Ignore messages from ignored/blocked users in global chat stream
+                    if (botRef && (botRef.isBlocked || botRef.isIgnored)) return;
 
-            const container = document.getElementById('chat-messages');
-            
-            // Build outbound user card elements inline inside layout markup
-            const messageElement = document.createElement('div');
-            messageElement.className = "flex items-end space-x-2 justify-end max-w-[85%] ml-auto";
-            messageElement.innerHTML = `
-                <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-br-none shadow-md">
-                    <p class="text-sm">${escapeHTML(messageText)}</p>
-                    <span class="block text-[9px] text-indigo-200 text-right mt-1">Just Now</span>
-                </div>
-            `;
-            
-            container.appendChild(messageElement);
-            input.value = "";
-            
-            // Smoothly snap box tracking downwards 
+                    let msgClass = (msg.sender === currentUser.username) ? 'sent' : 'received';
+                    container.innerHTML += `
+                        <div class="message ${msgClass}">
+                            <div class="message-sender">${msg.sender} <span class="inline-verified-tag">✓ Verified User</span></div>
+                            <div>${msg.text}</div>
+                        </div>`;
+                });
+            } else {
+                // 1-to-1 Private Inbox View Filter
+                const botRef = premiumBots.find(b => b.username === activeInboxPartner);
+                if (botRef && botRef.isBlocked) {
+                    container.innerHTML = `<div class="message system" style="background:#b91c1c; color:white;">You have blocked this user. Unblock them from their profile to chat.</div>`;
+                    return;
+                }
+
+                const history = privateInboxDatabase[activeInboxPartner] || [];
+                history.forEach(msg => {
+                    let msgClass = (msg.sender === currentUser.username) ? 'sent' : 'received';
+                    container.innerHTML += `
+                        <div class="message ${msgClass}">
+                            <div class="message-sender">${msg.sender} <span class="inline-verified-tag">✓ Verified User</span></div>
+                            <div>${msg.text}</div>
+                        </div>`;
+                });
+            }
             container.scrollTop = container.scrollHeight;
         }
 
-        function appendSystemMessage(text) {
-            const container = document.getElementById('chat-messages');
-            const systemNode = document.createElement('div');
-            systemNode.className = "text-center my-2";
-            systemNode.innerHTML = `<span class="bg-gray-900 border border-gray-800/60 px-3 py-1 rounded-full text-[11px] text-gray-400 font-medium tracking-wide">${text}</span>`;
-            container.appendChild(systemNode);
-            container.scrollTop = container.scrollHeight;
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const targetBot = premiumBots.find(b => b.username === activeInboxPartner);
+            if (activeRoom === 'inbox' && targetBot && targetBot.isBlocked) return;
+
+            const newMsg = { sender: currentUser.username, text: text };
+
+            if (activeRoom === 'main') {
+                globalMainMessages.push(newMsg);
+                renderMessages();
+            } else {
+                privateInboxDatabase[activeInboxPartner].push(newMsg);
+                renderMessages();
+
+                const currentPartner = activeInboxPartner;
+                setTimeout(() => {
+                    // Bot logic checks to make sure user didn't block them while waiting for a reply
+                    const checkBot = premiumBots.find(b => b.username === currentPartner);
+                    if (privateInboxDatabase[currentPartner] && checkBot && !checkBot.isBlocked) {
+                        privateInboxDatabase[currentPartner].push({
+                            sender: currentPartner,
+                            text: `This is an automated response inside our active 1-to-1 space channel.`
+                        });
+                        if (activeRoom === 'inbox' && activeInboxPartner === currentPartner) {
+                            renderMessages();
+                        }
+                    }
+                }, 1000);
+            }
+            input.value = '';
         }
 
-        // Feature modal overlay display toggling hooks
-        function toggleActionMenu() {
-            const menu = document.getElementById('action-menu');
-            menu.classList.toggle('hidden');
+        function showNotification(type, text) {
+            const n = document.getElementById('authNotify'); n.className = `notification ${type}`; n.innerText = text;
+        }
+        function clearNotification() {
+            const n = document.getElementById('authNotify'); n.className = 'notification'; n.innerText = '';
+        }
+        function logout() {
+            document.getElementById('chatPage').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('authForm').reset();
+            currentUser = null; authMode = 'login'; updateFormTitles();
         }
 
-        function openProfileSettings() {
-            alert("Profile Verification Settings interface activated. Close modal settings menu view.");
-            toggleActionMenu();
-        }
-
-        function viewBlockedUsers() {
-            alert("No user objects inside active block list configurations arrays.");
-            toggleActionMenu();
-        }
-
-        function handleLogout() {
-            currentUser = "";
-            document.getElementById('username').value = "";
-            document.getElementById('main-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('opacity-100');
-            document.getElementById('auth-screen').classList.remove('hidden');
-            const menu = document.getElementById('action-menu');
-            if(!menu.classList.contains('hidden')) menu.classList.add('hidden');
-        }
-
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-            );
-        }
-
-        // Initialize core vector svg visual icons
-        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        });
     </script>
 </body>
 </html>
