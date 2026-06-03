@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Premium Chat Hub</title>
+    <title>Premium Chat Hub - Election Mode</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -15,7 +15,8 @@
             --user-color: #3b82f6;
             --error-color: #f87171;
             --success-color: #4ade80;
-            --modal-overlay: rgba(0, 0, 0, 0.75);
+            --purple-alert: #8b5cf6;
+            --modal-overlay: rgba(0, 0, 0, 0.8);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -23,7 +24,7 @@
         
         .hidden { display: none !important; }
 
-        /* --- AUTHENTICATION PORTAL --- */
+        /* --- AUTH SYSTEM --- */
         .login-container { background: var(--panel-bg); padding: 2rem; border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #22314d; }
         .login-tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 2px solid #22314d; }
         .tab-btn { flex: 1; padding: 12px; background: none; border: none; color: var(--text-muted); font-size: 0.95rem; font-weight: bold; cursor: pointer; }
@@ -32,7 +33,6 @@
         .form-group { margin-bottom: 1.25rem; }
         .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.85rem; font-weight: 500; }
         .form-group input, .form-group select { width: 100%; padding: 12px; background: #0b0f19; border: 1px solid #22314d; border-radius: 8px; color: white; font-size: 1rem; }
-        .form-group input:focus { border-color: var(--user-color); outline: none; }
         
         .login-btn { width: 100%; padding: 14px; background: var(--user-color); border: none; border-radius: 8px; color: white; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 0.5rem; }
         .toggle-auth-mode { text-align: center; margin-top: 1.25rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; }
@@ -42,10 +42,10 @@
         .notification.error { background: rgba(239, 68, 68, 0.15); color: var(--error-color); border: 1px solid var(--error-color); display: block; }
         .notification.success { background: rgba(74, 222, 128, 0.15); color: var(--success-color); border: 1px solid var(--success-color); display: block; }
 
-        /* --- CHAT SYSTEM INTERFACE --- */
+        /* --- CHAT VIEW --- */
         .chat-container { width: 100vw; height: 100vh; background: var(--panel-bg); display: flex; position: relative; overflow: hidden; }
         
-        .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid #1e2d44; display: flex; flex-direction: column; z-index: 10; transition: transform 0.3s ease; }
+        .sidebar { width: 290px; background: var(--sidebar-bg); border-right: 1px solid #1e2d44; display: flex; flex-direction: column; z-index: 10; transition: transform 0.3s ease; }
         .user-profile-bar { padding: 16px; background: #131d2f; border-bottom: 1px solid #1e2d44; display: flex; justify-content: space-between; align-items: center; }
         .logout-btn { padding: 6px 12px; background: #22314d; border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
         
@@ -61,13 +61,22 @@
         .status-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-right: 10px; }
         
         .badge { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-left: auto; letter-spacing: 0.5px; }
-        .badge.premium { background: var(--gold); color: #000; }
-        .badge.verified { background: var(--user-color); color: #fff; }
-        .badge.blocked-tag { background: #475569; color: #cbd5e1; }
+        .badge.admin-tag { background: var(--gold); color: #000; }
+        .badge.mod-tag { background: var(--purple-alert); color: #fff; }
+        .badge.premium-tag { background: #e2e8f0; color: #0f172a; }
+        .badge.verified-tag { background: var(--user-color); color: #fff; }
+        .badge.unverified-tag { background: #475569; color: #cbd5e1; }
+        .badge.blocked-system-tag { background: #ef4444; color: white; }
 
         .chat-window { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; }
         .chat-header { padding: 14px 16px; background: var(--panel-bg); border-bottom: 1px solid #1e2d44; display: flex; align-items: center; gap: 12px; }
         
+        /* --- ELECTION ANNOUNCEMENT BANNER --- */
+        .election-banner { background: linear-gradient(90deg, #31108f 0%, #5b21b6 50%, #1e1b4b 100%); padding: 12px 16px; border-bottom: 1px solid var(--purple-alert); display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .election-text h5 { color: #f3e8ff; font-size: 0.95rem; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+        .election-text p { color: #d8b4fe; font-size: 0.78rem; }
+        .apply-btn { padding: 6px 14px; background: var(--gold); color: #000; border: none; border-radius: 20px; font-weight: bold; font-size: 0.75rem; cursor: pointer; white-space: nowrap; }
+
         .menu-toggle-btn { display: none; background: #1e2d44; border: none; color: white; padding: 8px 12px; border-radius: 6px; font-size: 1rem; cursor: pointer; }
 
         .messages-display { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
@@ -77,32 +86,24 @@
         .message.sent { background: var(--user-color); align-self: flex-end; border-top-right-radius: 2px; }
         
         .message-sender { font-size: 0.7rem; color: #94a3b8; margin-bottom: 4px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
-        .message.sent .message-sender { color: #bfdbfe; }
         
         .chat-input-area { padding: 14px; background: var(--panel-bg); border-top: 1px solid #1e2d44; display: flex; gap: 8px; align-items: center; }
         .chat-input-area input { flex: 1; padding: 12px; background: #0b0f19; border: 1px solid #1e2d44; border-radius: 24px; color: white; font-size: 0.95rem; text-indent: 6px; }
         .chat-input-area button { padding: 12px 20px; background: var(--user-color); border: none; border-radius: 24px; color: white; font-weight: bold; cursor: pointer; }
         
         .locked-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #64748b; gap: 12px; background: #090d16; text-align: center; padding: 24px; }
-        .lock-icon { font-size: 2.5rem; }
 
-        /* --- USER ACTION MODAL SHEET --- */
+        /* --- CONTROL PANEL SHEET MODAL --- */
         .modal-mask { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--modal-overlay); display: flex; justify-content: center; align-items: center; z-index: 100; padding: 20px; }
-        .profile-modal { background: var(--panel-bg); border: 1px solid #22314d; border-radius: 16px; width: 100%; max-width: 360px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8); animation: fadeIn 0.2s ease-out; }
+        .profile-modal { background: var(--panel-bg); border: 1px solid #22314d; border-radius: 16px; width: 100%; max-width: 380px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
         .modal-header { padding: 20px; background: #131d2f; border-bottom: 1px solid #1e2d44; text-align: center; position: relative; }
         .modal-close-btn { position: absolute; right: 15px; top: 15px; background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
         .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .modal-info-row { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
+        .modal-info-row { font-size: 0.9rem; color: #cbd5e1; margin-bottom: 4px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
         
-        .modal-action-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-pvt { background: var(--user-color); }
-        .btn-pvt:hover { background: #2563eb; }
-        .btn-ignore { background: #475569; }
-        .btn-ignore:hover { background: #334155; }
-        .btn-block { background: #b91c1c; }
-        .btn-block:hover { background: #991b1b; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-action-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .admin-action-section { border-top: 2px dashed #22314d; margin-top: 10px; padding-top: 14px; }
+        .admin-title { font-size: 0.75rem; color: var(--gold); text-transform: uppercase; font-weight: bold; margin-bottom: 10px; letter-spacing: 0.5px; }
 
         @media (max-width: 768px) {
             .menu-toggle-btn { display: block; }
@@ -117,8 +118,8 @@
 
     <div class="login-container" id="loginPage">
         <div class="login-tabs">
-            <button class="tab-btn active" id="userTab" onclick="switchRoleTab('user')">User Access Portal</button>
-            <button class="tab-btn" id="adminTab" onclick="switchRoleTab('admin')">Admin Hub</button>
+            <button class="tab-btn active" id="userTab" onclick="switchRoleTab('user')">User Entry</button>
+            <button class="tab-btn" id="adminTab" onclick="switchRoleTab('admin')">Staff Upgrades</button>
         </div>
 
         <h2 id="portalTitle" style="margin-bottom: 1.25rem; text-align: center; font-size: 1.2rem;">Sign In</h2>
@@ -127,28 +128,28 @@
         <form id="authForm" onsubmit="handleAuthSubmit(event)">
             <div class="form-group">
                 <label>Username</label>
-                <input type="text" id="username" required placeholder="Enter username...">
+                <input type="text" id="username" required placeholder="Enter login name...">
             </div>
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" id="password" required placeholder="••••••••">
             </div>
             <div class="form-group hidden" id="adminRoleGroup">
-                <label>Account Assignment Tier</label>
+                <label>Authorized Assignment Status</label>
                 <select id="adminRegisteredRole">
-                    <option value="admin">System Admin Account</option>
-                    <option value="premium">Forever Premium Member Account</option>
+                    <option value="admin">System Administrator</option>
+                    <option value="premium">Forever Premium Member</option>
                 </select>
             </div>
             <div class="form-group hidden" id="adminPinGroup">
-                <label>Verification Security PIN</label>
-                <input type="password" id="adminPin" placeholder="Enter Security Code PIN">
+                <label>Verification Security PIN (Required)</label>
+                <input type="password" id="adminPin" placeholder="Enter security tier 1248 PIN">
             </div>
             <button type="submit" class="login-btn" id="submitBtn">Sign In</button>
         </form>
 
         <div class="toggle-auth-mode" id="toggleAuthMode" onclick="toggleAuthMode()">
-            Don't have an account? <span>Register here</span>
+            New to the network? <span>Create Account</span>
         </div>
     </div>
 
@@ -159,43 +160,51 @@
             <div class="user-profile-bar">
                 <div>
                     <span id="currentUserName" style="font-weight: bold; font-size:0.95rem;">User</span>
-                    <div id="currentUserBadge" class="badge verified" style="margin-top:4px; margin-left:0; display:inline-block;">VERIFIED</div>
+                    <div id="currentUserBadge" class="badge verified-tag" style="margin-top:4px; margin-left:0; display:inline-block;">MEMBER</div>
                 </div>
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
 
             <div class="channel-section">
                 <div class="section-title">Rooms</div>
-                <div class="channel-item active" id="roomMain" onclick="switchRoom('main')">🌐 Main Open Chat</div>
-                <div class="channel-item" id="roomInbox" onclick="switchRoom('inbox')">📥 Personal Inbox</div>
+                <div class="channel-item active" id="roomMain" onclick="switchRoom('main')">🌐 Global Open Channel</div>
+                <div class="channel-item" id="roomInbox" onclick="switchRoom('inbox')">📥 Secure 1-to-1 PM</div>
             </div>
 
             <div class="channel-section" style="flex: 1; display:flex; flex-direction:column; overflow:hidden;">
-                <div class="section-title" id="userListTitle">Active Channels</div>
+                <div class="section-title" id="userListTitle">Network Directory</div>
                 <div class="user-list" id="usersListContainer"></div>
             </div>
         </div>
 
         <div class="chat-window">
+            <div class="election-banner">
+                <div class="election-text">
+                    <h5>⚡ Moderator Election Nominations Open!</h5>
+                    <p>Help shape our community parameters. Note: Only Premium Tier accounts are eligible to submit applications.</p>
+                </div>
+                <button class="apply-btn" onclick="triggerElectionApply()">Nominate Now</button>
+            </div>
+
             <div class="chat-header">
                 <button class="menu-toggle-btn" onclick="toggleMobileSidebar()">☰ Menu</button>
                 <div>
-                    <h4 id="activeRoomTitle" style="font-size: 1rem;">🌐 Main Open Chat</h4>
+                    <h4 id="activeRoomTitle" style="font-size: 1rem;">🌐 Global Open Channel</h4>
                 </div>
             </div>
 
             <div id="chatActiveView" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
                 <div class="messages-display" id="messagesContainer"></div>
                 <div class="chat-input-area">
-                    <input type="text" id="messageInput" placeholder="Write message...">
+                    <input type="text" id="messageInput" placeholder="Type an encrypted message...">
                     <button onclick="sendMessage()">Send</button>
                 </div>
             </div>
 
             <div id="chatLockedView" class="locked-screen hidden">
-                <div class="lock-icon">🔒</div>
-                <h3 style="font-size: 1.15rem; color:#f8fafc;">Verification Required</h3>
-                <p style="font-size: 0.85rem; max-width:280px;">Your account is currently Unverified. You cannot broadcast to Main Open Chat. Please click any user in the directory to begin a permissible Private Message.</p>
+                <div style="font-size: 2.5rem;">🔒</div>
+                <h3 style="font-size: 1.15rem; color:#f8fafc;">Verification Threshold Required</h3>
+                <p id="lockScreenParagraph" style="font-size: 0.85rem; max-width:320px; color:var(--text-muted);">Unverified users cannot post in public chatrooms. Please select an Admin, Mod, or Premium user from the live directory sidebar to establish communication.</p>
             </div>
         </div>
     </div>
@@ -204,32 +213,38 @@
         <div class="profile-modal">
             <div class="modal-header">
                 <button class="modal-close-btn" onclick="closeProfileModal()">✕</button>
-                <h3 id="modalUserTitle" style="font-size:1.15rem;">User Profile</h3>
-                <p id="modalUserSubtitle" style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Status: Online</p>
+                <h3 id="modalUserTitle" style="font-size:1.15rem;">Account Profile</h3>
+                <p id="modalUserSubtitle" style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Status: Online Active Loop</p>
             </div>
             <div class="modal-body">
                 <div class="modal-info-row">
-                    <span>Account Standing</span>
-                    <span id="modalVerificationStatus" style="font-weight:bold;">Restricted</span>
+                    <span>Assigned Badge Group</span>
+                    <span id="modalVerificationStatus" style="font-weight:bold;">Standard Member</span>
                 </div>
-                <div class="modal-info-row" id="modalPrivacyRow">
-                    <span>Privacy Filter</span>
-                    <span id="modalFilterStatus" style="color:var(--text-muted);">None</span>
+                <div class="modal-info-row">
+                    <span>Mute Status</span>
+                    <span id="modalMuteStatus" style="color:var(--text-muted);">Active / Clear</span>
+                </div>
+                <div class="modal-info-row">
+                    <span>Block Status</span>
+                    <span id="modalBlockStatus" style="color:var(--text-muted);">Active / Clear</span>
                 </div>
                 
-                <button class="modal-action-btn btn-pvt hidden" id="modalAdminVerifyToggleBtn" onclick="adminToggleUserVerification()" style="background:#10b981; margin-bottom: 4px;">
-                    ✓ Toggle Account Verification Status
+                <button class="modal-action-btn" id="modalPvtBtn" style="background:var(--user-color); margin-top: 8px;">
+                    💬 Establish Private Session
                 </button>
 
-                <button class="modal-action-btn btn-pvt" id="modalPvtBtn">
-                    💬 Private Message (1-to-1)
-                </button>
-                <button class="modal-action-btn btn-ignore" id="modalIgnoreBtn" onclick="toggleIgnoreUser()">
-                    👁️ Ignore User
-                </button>
-                <button class="modal-action-btn btn-block" id="modalBlockBtn" onclick="toggleBlockUser()">
-                    🚫 Block User
-                </button>
+                <div class="admin-action-section hidden" id="adminControlsBlock">
+                    <div class="admin-title">🛠️ Administrator Privileged Overrides</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom:8px;">
+                        <button class="modal-action-btn" style="background:var(--purple-alert); font-size:0.8rem;" onclick="adminToggleRole('mod')">⚖️ Toggle Mod</button>
+                        <button class="modal-action-btn" style="background:#e2e8f0; color:#000; font-size:0.8rem;" onclick="adminToggleRole('premium')">👑 Toggle Premium</button>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button class="modal-action-btn" style="background:var(--gold); color:#000; font-size:0.8rem;" onclick="adminToggleMute()">🔇 Toggle Mute</button>
+                        <button class="modal-action-btn" style="background:#ef4444; font-size:0.8rem;" onclick="adminToggleBlock()">🚫 Toggle Block</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -242,64 +257,80 @@
         let activeInboxPartner = null; 
         let selectedModalUser = null; 
 
-        const SECURITY_PIN = "1248";
+        const ACCESS_PIN = "1248";
 
-        // Persistent State Database Array including 25 Core Dummy Mixed Tamil Users
+        // Global State Database Matrix populated with 55+ Mixed Tamil accounts
         const userDatabase = {
             users: [
-                { username: "Renuka", password: "123", status: "unverified" }, 
-                { username: "Sarah", password: "123", status: "verified" },
-                // 25 Mixed Male & Female Dummy Tamil Users
-                { username: "Anbarasan", password: "123", status: "verified" },
-                { username: "Kavitha", password: "123", status: "unverified" },
-                { username: "Muthu", password: "123", status: "verified" },
-                { username: "Thamarai", password: "123", status: "unverified" },
-                { username: "Karthik", password: "123", status: "verified" },
-                { username: "Malathi", password: "123", status: "unverified" },
-                { username: "Selvam", password: "123", status: "verified" },
-                { username: "Priya_Dharshini", password: "123", status: "verified" },
-                { username: "Senthil", password: "123", status: "unverified" },
-                { username: "Abirami", password: "123", status: "verified" },
-                { username: "Vignesh", password: "123", status: "verified" },
-                { username: "Meenakshi", password: "123", status: "unverified" },
-                { username: "Ilango", password: "123", status: "verified" },
-                { username: "Deepa", password: "123", status: "verified" },
-                { username: "Saravanan", password: "123", status: "unverified" },
-                { username: "Nandhini", password: "123", status: "verified" },
-                { username: "Rajesh", password: "123", status: "verified" },
-                { username: "Bhavani", password: "123", status: "unverified" },
-                { username: "Murugan", password: "123", status: "verified" },
-                { username: "Janani", password: "123", status: "verified" },
-                { username: "Kathiravan", password: "123", status: "unverified" },
-                { username: "Sangeetha", password: "123", status: "verified" },
-                { username: "Arun_Kumar", password: "123", status: "verified" },
-                { username: "Divya", password: "123", status: "unverified" },
-                { username: "Pandian", password: "123", status: "verified" }
+                { username: "Renuka", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Sarah", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Anbarasan", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Kavitha", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Muthu", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Thamarai", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Karthik", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Malathi", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Selvam", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Priya", password: "123", status: "premium", isMuted: false, isBlocked: false },
+                { username: "Senthil", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Abirami", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Vignesh", password: "123", status: "mod", isMuted: false, isBlocked: false },
+                { username: "Meenakshi", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Ilango", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Deepa", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Saravanan", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Nandhini", password: "123", status: "premium", isMuted: false, isBlocked: false },
+                { username: "Rajesh", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Bhavani", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Murugan", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Janani", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Kathiravan", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Sangeetha", password: "123", status: "mod", isMuted: false, isBlocked: false },
+                { username: "Arun", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Divya", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Pandian", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Ezhil", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Madhumitha", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Ganesh", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Pavithra", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Babu", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Uma", password: "123", status: "premium", isMuted: false, isBlocked: false },
+                { username: "Hari", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Radha", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Suresh", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Chitra", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Anand", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Devi", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Vijay", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Kokila", password: "123", status: "premium", isMuted: false, isBlocked: false },
+                { username: "Ramesh", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Revathi", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Manikandan", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Shalini", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Kumaran", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Nisha", password: "123", status: "premium", isMuted: false, isBlocked: false },
+                { username: "Prakash", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Lakshmi", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Siva", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Aswini", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Balaji", password: "123", status: "unverified", isMuted: false, isBlocked: false },
+                { username: "Yamuna", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Kamal", password: "123", status: "verified", isMuted: false, isBlocked: false },
+                { username: "Swetha", password: "123", status: "unverified", isMuted: false, isBlocked: false }
             ],
             admins: [
-                { username: "Admin", password: "123", status: "admin" }
+                { username: "Admin", password: "123", status: "admin", isMuted: false, isBlocked: false }
             ]
         };
 
-        const premiumBots = [
-            { username: 'VIP_Elena✨', status: 'premium', isBlocked: false, isIgnored: false },
-            { username: 'Mark_Premium👑', status: 'premium', isBlocked: false, isIgnored: false }
-        ];
-
-        const modAccounts = [
-            { username: 'Mod_Alex🛡️', status: 'mod', isBlocked: false, isIgnored: false },
-            { username: 'Mod_Chris⚔️', status: 'mod', isBlocked: false, isIgnored: false }
-        ];
-
         let globalMainMessages = [
-            { sender: 'VIP_Elena✨', text: 'Welcome to the global open server feed channel!' }
+            { sender: 'System_Broadcast', text: 'Moderator election protocols have been fully loaded into core memory.' }
         ];
         
         let privateInboxDatabase = {};
 
-        // Calculate total online headcount safely across all dynamic lists
-        function getOnlineCount() {
-            return userDatabase.users.length + userDatabase.admins.length + premiumBots.length + modAccounts.length;
+        function getLiveCount() {
+            return userDatabase.users.length + userDatabase.admins.length;
         }
 
         function toggleMobileSidebar() {
@@ -330,14 +361,14 @@
             const adminRoleGroup = document.getElementById('adminRoleGroup');
 
             if (authMode === 'login') {
-                portalTitle.innerText = currentRole === 'admin' ? "Sign In - Admin/Premium Panel" : "Sign In";
+                portalTitle.innerText = currentRole === 'admin' ? "Sign In - Privileged Gateway" : "Sign In";
                 submitBtn.innerText = "Sign In";
-                toggleLink.innerHTML = "Don't have an account? <span>Register</span>";
+                toggleLink.innerHTML = "New to the network? <span>Create Account</span>";
                 adminPinGroup.classList.add('hidden');
                 adminRoleGroup.classList.add('hidden');
             } else {
-                portalTitle.innerText = currentRole === 'admin' ? "Register Authorized Account" : "Create Profile";
-                submitBtn.innerText = "Register Account";
+                portalTitle.innerText = currentRole === 'admin' ? "Register Elite Level Node" : "Register Profile";
+                submitBtn.innerText = "Provision Credentials";
                 toggleLink.innerHTML = "Have an account? <span>Sign in</span>";
                 if (currentRole === 'admin') {
                     adminPinGroup.classList.remove('hidden');
@@ -358,30 +389,37 @@
                                userDatabase.admins.find(a => a.username.toLowerCase() === usernameInput.toLowerCase());
 
             if (authMode === 'register') {
-                if (accountFound) { return showNotification('error', 'Username taken!'); }
+                if (accountFound) { return showNotification('error', 'Username is registered to another user.'); }
                 
                 if (currentRole === 'admin') {
                     const pinInput = document.getElementById('adminPin').value;
                     const selectedTier = document.getElementById('adminRegisteredRole').value;
                     
-                    if (pinInput !== SECURITY_PIN) {
-                        return showNotification('error', 'Invalid Authorized Registration PIN!');
+                    if (pinInput !== ACCESS_PIN) {
+                        return showNotification('error', 'Invalid Tier 1248 Security PIN Code.');
                     }
 
-                    const newSecuredUser = { username: usernameInput, password: passwordInput, status: selectedTier };
-                    userDatabase.admins.push(newSecuredUser);
-                    showNotification('success', `${selectedTier === 'admin' ? 'Admin' : 'Forever Premium'} profile created successfully!`);
+                    const newElevatedUser = { username: usernameInput, password: passwordInput, status: selectedTier, isMuted: false, isBlocked: false };
+                    if (selectedTier === 'admin') {
+                        userDatabase.admins.push(newElevatedUser);
+                    } else {
+                        userDatabase.users.push(newElevatedUser);
+                    }
+                    showNotification('success', `${selectedTier.toUpperCase()} account configured successfully!`);
                 } else {
-                    const newAccount = { username: usernameInput, password: passwordInput, status: 'unverified' };
+                    const newAccount = { username: usernameInput, password: passwordInput, status: 'unverified', isMuted: false, isBlocked: false };
                     userDatabase.users.push(newAccount);
-                    showNotification('success', 'Profile created! Please log in.');
+                    showNotification('success', 'Registration accepted. Please sign in now.');
                 }
                 
                 authMode = 'login'; updateFormTitles(); document.getElementById('authForm').reset();
                 return;
             } else {
                 if (!accountFound || accountFound.password !== passwordInput) {
-                    return showNotification('error', 'Wrong username or password!');
+                    return showNotification('error', 'Invalid username or passphrase.');
+                }
+                if (accountFound.isBlocked) {
+                    return showNotification('error', 'This account has been administratively blocked.');
                 }
                 currentUser = accountFound;
                 document.getElementById('loginPage').classList.add('hidden');
@@ -394,106 +432,69 @@
             document.getElementById('currentUserName').innerText = currentUser.username;
             const badgeEl = document.getElementById('currentUserBadge');
             
-            if (currentUser.status === 'admin') {
-                badgeEl.innerText = "ADMIN";
-                badgeEl.className = "badge premium";
-                activeInboxPartner = userDatabase.users[0] ? userDatabase.users[0].username : 'VIP_Elena✨';
-            } else if (currentUser.status === 'premium') {
-                badgeEl.innerText = "PREMIUM";
-                badgeEl.className = "badge premium";
-                activeInboxPartner = 'Admin';
-            } else {
-                badgeEl.innerText = currentUser.status.toUpperCase();
-                badgeEl.className = currentUser.status === 'verified' ? "badge verified" : "badge blocked-tag";
-                activeInboxPartner = 'Admin'; 
-            }
+            badgeEl.innerText = currentUser.status.toUpperCase();
+            if (currentUser.status === 'admin') badgeEl.className = "badge admin-tag";
+            else if (currentUser.status === 'mod') badgeEl.className = "badge mod-tag";
+            else if (currentUser.status === 'premium') badgeEl.className = "badge premium-tag";
+            else if (currentUser.status === 'verified') badgeEl.className = "badge verified-tag";
+            else badgeEl.className = "badge unverified-tag";
+
+            activeInboxPartner = currentUser.status === 'admin' ? 'Renuka' : 'Admin';
             switchRoom('main');
         }
 
-        /* --- PROFILE POP-UP MODAL ACTIONS --- */
-        function openProfileModal(username, sourceCollection = 'users') {
+        function triggerElectionApply() {
+            if (currentUser.status === 'premium' || currentUser.status === 'admin') {
+                alert("Nomination successfully registered! Your profile has been added to the moderator election ledger.");
+            } else {
+                alert("Access Denied: Only Premium tier accounts can apply for Moderator election slots.");
+            }
+        }
+
+        /* --- INTERACTIVE ACTION PROFILE INTERFACE --- */
+        function openProfileModal(username) {
             if (username === currentUser.username) return;
 
-            let accountObj = null;
-            if (sourceCollection === 'premiumBots') accountObj = premiumBots.find(b => b.username === username);
-            else if (sourceCollection === 'modAccounts') accountObj = modAccounts.find(m => m.username === username);
-            else if (sourceCollection === 'users') accountObj = userDatabase.users.find(u => u.username === username) || userDatabase.admins.find(a => a.username === username);
-
-            if (!accountObj) return;
-            selectedModalUser = { data: accountObj, collection: sourceCollection };
+            let targetUser = userDatabase.users.find(u => u.username === username) || userDatabase.admins.find(a => a.username === username);
+            if (!targetUser) return;
             
-            document.getElementById('modalUserTitle').innerText = accountObj.username;
+            selectedModalUser = targetUser;
+            document.getElementById('modalUserTitle').innerText = targetUser.username;
             
             const verifyStatusEl = document.getElementById('modalVerificationStatus');
-            const adminVerifyToggleBtn = document.getElementById('modalAdminVerifyToggleBtn');
+            const muteEl = document.getElementById('modalMuteStatus');
+            const blockEl = document.getElementById('modalBlockStatus');
             const pvtActionBtn = document.getElementById('modalPvtBtn');
-            const ignoreActionBtn = document.getElementById('modalIgnoreBtn');
-            const blockActionBtn = document.getElementById('modalBlockBtn');
-            const filterRow = document.getElementById('modalPrivacyRow');
+            const adminBlock = document.getElementById('adminControlsBlock');
 
-            if (accountObj.status === 'premium' || accountObj.status === 'admin' || username === 'Admin') {
-                verifyStatusEl.innerText = "Premium Verified";
-                verifyStatusEl.style.color = "var(--gold)";
-            } else if (accountObj.status === 'mod') {
-                verifyStatusEl.innerText = "System Team";
-                verifyStatusEl.style.color = "var(--user-color)";
+            // Set visual text badges
+            verifyStatusEl.innerText = targetUser.status.toUpperCase();
+            muteEl.innerText = targetUser.isMuted ? "MUTED" : "Clear";
+            muteEl.style.color = targetUser.isMuted ? "var(--gold)" : "var(--text-muted)";
+            blockEl.innerText = targetUser.isBlocked ? "BLOCKED" : "Clear";
+            blockEl.style.color = targetUser.isBlocked ? "var(--error-color)" : "var(--text-muted)";
+
+            // Show admin panel if logged in account is root administrator
+            if (currentUser.status === 'admin') {
+                adminBlock.classList.remove('hidden');
             } else {
-                verifyStatusEl.innerText = accountObj.status === 'verified' ? "✓ Verified Account" : "Restricted Account";
-                verifyStatusEl.style.color = accountObj.status === 'verified' ? "var(--success-color)" : "var(--error-color)";
+                adminBlock.classList.add('hidden');
             }
 
-            const isTargetStandardUser = userDatabase.users.some(u => u.username === username);
-            if (currentUser.status === 'admin' && isTargetStandardUser) {
-                adminVerifyToggleBtn.classList.remove('hidden');
-            } else {
-                adminVerifyToggleBtn.classList.add('hidden');
-            }
-
-            if (currentUser.status !== 'admin') {
-                filterRow.classList.remove('hidden');
-                ignoreActionBtn.classList.remove('hidden');
-                blockActionBtn.classList.remove('hidden');
-
-                // ENFORCED RULE MATCH: Unverified accounts can ONLY message Mod, Admin, or Premium users.
-                const isTargetPrivileged = (accountObj.status === 'premium' || accountObj.status === 'admin' || accountObj.status === 'mod' || username === 'Admin');
-                
-                if (currentUser.status === 'unverified' && !isTargetPrivileged) {
-                    pvtActionBtn.innerText = "🔒 Messaging Restricted";
-                    pvtActionBtn.style.background = "#475569";
-                    pvtActionBtn.onclick = function() { alert("Unverified users can only send messages to Mods, Admins, or Premium users."); };
-                } else {
-                    pvtActionBtn.innerText = "💬 Private Message (1-to-1)";
-                    pvtActionBtn.style.background = "var(--user-color)";
-                    pvtActionBtn.onclick = function() { closeProfileModal(); startPrivateChatWith(username); };
-                }
-
-                const filterEl = document.getElementById('modalFilterStatus');
-                if (accountObj.isBlocked) { filterEl.innerText = "Blocked"; filterEl.style.color = "var(--error-color)"; }
-                else if (accountObj.isIgnored) { filterEl.innerText = "Ignored"; filterEl.style.color = "var(--gold)"; }
-                else { filterEl.innerText = "Active / None"; filterEl.style.color = "var(--text-muted)"; }
-
-                ignoreActionBtn.innerText = accountObj.isIgnored ? "👁️ Unignore User" : "👁️ Ignore User";
-                blockActionBtn.innerText = accountObj.isBlocked ? "🚫 Unblock User" : "🚫 Block User";
-            } else {
-                filterRow.classList.add('hidden');
-                ignoreActionBtn.classList.add('hidden');
-                blockActionBtn.classList.add('hidden');
-                
-                pvtActionBtn.innerText = "🔍 Intercept Archive Chat Logs";
+            // CRITICAL VERIFICATION CHECK ENFORCEMENT
+            const isTargetPrivileged = (targetUser.status === 'admin' || targetUser.status === 'mod' || targetUser.status === 'premium');
+            
+            if (currentUser.status === 'unverified' && !isTargetPrivileged) {
+                pvtActionBtn.innerText = "🔒 Private Routing Locked";
+                pvtActionBtn.style.background = "#334155";
+                pvtActionBtn.onclick = function() { alert("Verification rule unmatched: Unverified accounts can only private message Admin, Mod, or Premium tier profiles."); };
+            } else if (currentUser.status === 'verified' || currentUser.status === 'premium' || currentUser.status === 'mod' || currentUser.status === 'admin' || isTargetPrivileged) {
+                pvtActionBtn.innerText = "💬 Open Private Chat Routing";
                 pvtActionBtn.style.background = "var(--user-color)";
                 pvtActionBtn.onclick = function() { closeProfileModal(); startPrivateChatWith(username); };
             }
 
             document.getElementById('profileModal').classList.remove('hidden');
-        }
-
-        function adminToggleUserVerification() {
-            if (!selectedModalUser) return;
-            const userObj = selectedModalUser.data;
-            userObj.status = (userObj.status === 'verified') ? 'unverified' : 'verified';
-            closeProfileModal();
-            renderUserSidePanel();
-            renderMessages();
         }
 
         function closeProfileModal() {
@@ -506,94 +507,87 @@
             switchRoom('inbox');
         }
 
-        function toggleIgnoreUser() {
+        /* --- ADMIN PRIVILEGED OVERRIDE LOGIC CONTROLS --- */
+        function adminToggleRole(roleType) {
             if (!selectedModalUser) return;
-            selectedModalUser.data.isIgnored = !selectedModalUser.data.isIgnored;
-            if (selectedModalUser.data.isIgnored) selectedModalUser.data.isBlocked = false; 
-            closeProfileModal();
+            selectedModalUser.status = (selectedModalUser.status === roleType) ? 'verified' : roleType;
+            openProfileModal(selectedModalUser.username);
             renderUserSidePanel();
             renderMessages();
         }
 
-        function toggleBlockUser() {
+        function adminToggleMute() {
             if (!selectedModalUser) return;
-            selectedModalUser.data.isBlocked = !selectedModalUser.data.isBlocked;
-            if (selectedModalUser.data.isBlocked) selectedModalUser.data.isIgnored = false;
-            closeProfileModal();
+            selectedModalUser.isMuted = !selectedModalUser.isMuted;
+            openProfileModal(selectedModalUser.username);
+            renderMessages();
+        }
+
+        function adminToggleBlock() {
+            if (!selectedModalUser) return;
+            selectedModalUser.isBlocked = !selectedModalUser.isBlocked;
+            openProfileModal(selectedModalUser.username);
             renderUserSidePanel();
             renderMessages();
         }
 
-        /* --- SIDEBAR ACTIVE SYSTEM DIRECTORY (ALL USERS & LIVE COUNT VISIBLE TO EVERYONE) --- */
+        /* --- LIVE SIDEBAR PANEL RENDERER --- */
         function renderUserSidePanel() {
             const listContainer = document.getElementById('usersListContainer');
             const titleContainer = document.getElementById('userListTitle');
             listContainer.innerHTML = '';
 
-            const liveHeadcount = getOnlineCount();
+            const activeHeadcount = getLiveCount();
 
             if (activeRoom === 'main') {
-                titleContainer.innerHTML = `Online Directory 🟢 <b>(${liveHeadcount} Live)</b>`;
+                titleContainer.innerHTML = `Active Stream Directory 🟢 (${activeHeadcount} Live)`;
                 
-                // Add current logged-in user at the top
+                // Add self profile element row entry
                 listContainer.innerHTML = `
-                    <div class="user-item" style="background: rgba(59, 130, 246, 0.1)">
-                        <div class="status-dot" style="background:#3b82f6;"></div>
+                    <div class="user-item" style="background: rgba(59, 130, 246, 0.12)">
+                        <div class="status-dot" style="background:var(--success-color);"></div>
                         <span>${currentUser.username} (You)</span>
-                        <span class="badge verified">${currentUser.status.toUpperCase()}</span>
+                        <span class="badge verified-tag" style="opacity: 0.8">${currentUser.status.toUpperCase()}</span>
                     </div>`;
                 
-                // Render Admins & Premiums
+                // Render Admin Array Blocks
                 userDatabase.admins.forEach(adm => {
                     if(adm.username === currentUser.username) return;
                     listContainer.innerHTML += `
-                        <div class="user-item" onclick="openProfileModal('${adm.username}', 'users')">
+                        <div class="user-item" onclick="openProfileModal('${adm.username}')">
                             <div class="status-dot" style="background: var(--gold)"></div>
                             <span>${adm.username}</span>
-                            <span class="badge premium">${adm.status.toUpperCase()}</span>
+                            <span class="badge admin-tag">ADMIN</span>
                         </div>`;
                 });
 
-                // Render Mods
-                modAccounts.forEach(mod => {
-                    listContainer.innerHTML += `
-                        <div class="user-item" onclick="openProfileModal('${mod.username}', 'modAccounts')">
-                            <div class="status-dot"></div>
-                            <span>${mod.username}</span>
-                            <span class="badge verified" style="background:var(--user-color)">MOD</span>
-                        </div>`;
-                });
-                
-                // Render Premium bots
-                premiumBots.forEach(bot => {
-                    listContainer.innerHTML += `
-                        <div class="user-item" onclick="openProfileModal('${bot.username}', 'premiumBots')">
-                            <div class="status-dot"></div>
-                            <span>${bot.username}</span>
-                            <span class="badge premium">PREMIUM</span>
-                        </div>`;
-                });
-
-                // Render Standard/Normal Tamil Users
+                // Render User Array Blocks (Includes Mods, Premiums, Verified, and Unverified)
                 userDatabase.users.forEach(u => {
                     if (u.username === currentUser.username) return;
+                    
+                    let statusBadgeClass = "verified-tag";
+                    if (u.status === 'mod') statusBadgeClass = "mod-tag";
+                    else if (u.status === 'premium') statusBadgeClass = "premium-tag";
+                    else if (u.status === 'unverified') statusBadgeClass = "unverified-tag";
+                    if (u.isBlocked) statusBadgeClass = "blocked-system-tag";
+
                     listContainer.innerHTML += `
-                        <div class="user-item" onclick="openProfileModal('${u.username}', 'users')">
-                            <div class="status-dot"></div>
-                            <span>${u.username}</span>
-                            <span class="badge verified" style="background:${u.status === 'unverified' ? '#b91c1c' : '#475569'}">${u.status.toUpperCase()}</span>
+                        <div class="user-item" onclick="openProfileModal('${u.username}')">
+                            <div class="status-dot" style="background:${u.isBlocked ? '#ef4444' : '#10b981'}"></div>
+                            <span>${u.username} ${u.isMuted ? '🔇' : ''}</span>
+                            <span class="badge ${statusBadgeClass}">${u.isBlocked ? 'BLOCKED' : u.status.toUpperCase()}</span>
                         </div>`;
                 });
             } else {
-                titleContainer.innerText = (currentUser.status === 'admin') ? `Tracking Logs (${liveHeadcount} Live)` : `Select Inbox Loop (${liveHeadcount} Live)`;
+                titleContainer.innerText = (currentUser.status === 'admin') ? `Override Tracking Log Channels` : `Active Direct DM Routes`;
                 
-                const validTargets = [...userDatabase.admins, ...userDatabase.users, ...premiumBots, ...modAccounts];
-                validTargets.forEach(tgt => {
+                const unifiedTargetMatrix = [...userDatabase.admins, ...userDatabase.users];
+                unifiedTargetMatrix.forEach(tgt => {
                     if (tgt.username === currentUser.username) return;
                     
-                    // Filter checking for Inbox list alignment: Unverified users hide regular users to avoid invalid interaction loops
+                    // Filter down selection framework for unverified accounts
                     if (currentUser.status === 'unverified') {
-                        const isTargetPrivileged = (tgt.status === 'premium' || tgt.status === 'admin' || tgt.status === 'mod' || tgt.username === 'Admin');
+                        const isTargetPrivileged = (tgt.status === 'premium' || tgt.status === 'admin' || tgt.status === 'mod');
                         if (!isTargetPrivileged) return;
                     }
 
@@ -602,7 +596,7 @@
                         <div class="user-item ${isActive}" onclick="selectInboxPartner('${tgt.username}')">
                             <div class="status-dot"></div>
                             <span>${tgt.username}</span>
-                            <span class="badge premium" style="background:var(--user-color)">CHAT</span>
+                            <span class="badge verified-tag">ROUTE</span>
                         </div>`;
                 });
             }
@@ -610,7 +604,7 @@
 
         function selectInboxPartner(partnerName) {
             activeInboxPartner = partnerName;
-            document.getElementById('activeRoomTitle').innerText = (currentUser.status === 'admin') ? `🔍 Log Viewer: ${partnerName}` : `📥 Private Loop: ${partnerName}`;
+            document.getElementById('activeRoomTitle').innerText = (currentUser.status === 'admin') ? `🔍 Log Intercept View: ${partnerName}` : `📥 Direct Loop: ${partnerName}`;
             renderUserSidePanel();
             renderMessages();
             if (window.innerWidth <= 768) toggleMobileSidebar();
@@ -624,12 +618,14 @@
             const activeView = document.getElementById('chatActiveView');
             const lockedView = document.getElementById('chatLockedView');
             const headerTitle = document.getElementById('activeRoomTitle');
+            const lockParagraph = document.getElementById('lockScreenParagraph');
 
             if (roomType === 'main') {
-                headerTitle.innerText = "🌐 Main Open Chat";
+                headerTitle.innerText = "🌐 Global Open Channel";
                 if (currentUser.status === 'unverified') {
                     activeView.classList.add('hidden');
                     lockedView.classList.remove('hidden');
+                    lockParagraph.innerText = "Unverified users cannot broadcast to the Open Channel. Please tap a Premium Member, Mod, or Admin user in the online directory sidebar to start an permitted private conversation.";
                 } else {
                     activeView.classList.remove('hidden');
                     lockedView.classList.add('hidden');
@@ -638,7 +634,7 @@
                 if (!activeInboxPartner) {
                     activeInboxPartner = currentUser.status === 'admin' ? 'Renuka' : 'Admin';
                 }
-                headerTitle.innerText = (currentUser.status === 'admin') ? `🔍 Log Viewer: ${activeInboxPartner}` : `📥 Private Loop: ${activeInboxPartner}`;
+                headerTitle.innerText = (currentUser.status === 'admin') ? `🔍 Log Intercept View: ${activeInboxPartner}` : `📥 Direct Loop: ${activeInboxPartner}`;
                 activeView.classList.remove('hidden');
                 lockedView.classList.add('hidden');
             }
@@ -662,27 +658,26 @@
                 });
             } else {
                 if (currentUser.status === 'admin') {
-                    let totalInterventions = [];
-                    
+                    let logHistoryArray = [];
                     Object.keys(privateInboxDatabase).forEach(convoKey => {
                         privateInboxDatabase[convoKey].forEach(m => {
                             if (convoKey.includes(activeInboxPartner) || m.sender === activeInboxPartner) {
-                                totalInterventions.push(m);
+                                logHistoryArray.push(m);
                             }
                         });
                     });
 
-                    totalInterventions = totalInterventions.filter((v, i, a) => a.findIndex(t => (t.text === v.text && t.sender === v.sender)) === i);
+                    logHistoryArray = logHistoryArray.filter((v, i, a) => a.findIndex(t => (t.text === v.text && t.sender === v.sender)) === i);
 
-                    if (totalInterventions.length === 0) {
-                        container.innerHTML = `<div class="message system">No archived chat messages found for this user.</div>`;
+                    if (logHistoryArray.length === 0) {
+                        container.innerHTML = `<div class="message system">No logged transmissions found for this session route.</div>`;
                         return;
                     }
 
-                    totalInterventions.forEach(msg => {
+                    logHistoryArray.forEach(msg => {
                         container.innerHTML += `
-                            <div class="message received" style="background:#1e2d44; max-width:95%;">
-                                <div class="message-sender" style="color:var(--gold);">From: ${msg.sender}</div>
+                            <div class="message received" style="background:#131c2e; max-width:95%; border:1px solid var(--purple-alert);">
+                                <div class="message-sender" style="color:var(--gold);">Archived Trace Sender: [${msg.sender}]</div>
                                 <div>${msg.text}</div>
                             </div>`;
                     });
@@ -690,8 +685,7 @@
                     const conversationKey = [currentUser.username, activeInboxPartner].sort().join('%%');
                     if (!privateInboxDatabase[conversationKey]) privateInboxDatabase[conversationKey] = [];
                     
-                    const history = privateInboxDatabase[conversationKey];
-                    history.forEach(msg => {
+                    privateInboxDatabase[conversationKey].forEach(msg => {
                         let msgClass = (msg.sender === currentUser.username) ? 'sent' : 'received';
                         container.innerHTML += `
                             <div class="message ${msgClass}">
@@ -705,6 +699,11 @@
         }
 
         function sendMessage() {
+            if (currentUser.isMuted) {
+                alert("Transmit Blocked: Your profile is currently muted by admin command.");
+                return;
+            }
+
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
             if (!text) return;
@@ -721,25 +720,6 @@
                 
                 privateInboxDatabase[conversationKey].push(newMsg);
                 renderMessages();
-
-                if (currentUser.status === 'admin') {
-                    input.value = '';
-                    return;
-                }
-
-                const currentPartner = activeInboxPartner;
-                const isBot = premiumBots.some(b => b.username === currentPartner);
-                if (isBot) {
-                    setTimeout(() => {
-                        if (privateInboxDatabase[conversationKey]) {
-                            privateInboxDatabase[conversationKey].push({
-                                sender: currentPartner,
-                                text: `Automated reply securely archived inside global storage arrays.`
-                            });
-                            if (activeRoom === 'inbox' && activeInboxPartner === currentPartner) renderMessages();
-                        }
-                    }, 1000);
-                }
             }
             input.value = '';
         }
