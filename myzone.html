@@ -45,7 +45,6 @@
         /* --- CHAT SYSTEM INTERFACE --- */
         .chat-container { width: 100vw; height: 100vh; background: var(--panel-bg); display: flex; position: relative; overflow: hidden; }
         
-        /* Sidebar Menu Layout */
         .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid #1e2d44; display: flex; flex-direction: column; z-index: 10; transition: transform 0.3s ease; }
         .user-profile-bar { padding: 16px; background: #131d2f; border-bottom: 1px solid #1e2d44; display: flex; justify-content: space-between; align-items: center; }
         .logout-btn { padding: 6px 12px; background: #22314d; border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
@@ -66,7 +65,6 @@
         .badge.verified { background: var(--user-color); color: #fff; }
         .badge.blocked-tag { background: #475569; color: #cbd5e1; }
 
-        /* Window Chat Container Panels */
         .chat-window { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; }
         .chat-header { padding: 14px 16px; background: var(--panel-bg); border-bottom: 1px solid #1e2d44; display: flex; align-items: center; gap: 12px; }
         
@@ -117,7 +115,6 @@
 </head>
 <body>
 
-    <!-- ==================== AUTH PORTAL ==================== -->
     <div class="login-container" id="loginPage">
         <div class="login-tabs">
             <button class="tab-btn active" id="userTab" onclick="switchRoleTab('user')">User Access Portal</button>
@@ -155,7 +152,6 @@
         </div>
     </div>
 
-    <!-- ==================== CHAT INTERFACE ==================== -->
     <div class="chat-container hidden" id="chatPage">
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
         
@@ -188,7 +184,6 @@
                 </div>
             </div>
 
-            <!-- Chat Active Room Views -->
             <div id="chatActiveView" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
                 <div class="messages-display" id="messagesContainer"></div>
                 <div class="chat-input-area">
@@ -197,16 +192,14 @@
                 </div>
             </div>
 
-            <!-- Room Security Error Guard -->
             <div id="chatLockedView" class="locked-screen hidden">
                 <div class="lock-icon">🔒</div>
                 <h3 style="font-size: 1.15rem; color:#f8fafc;">Verification Required</h3>
-                <p style="font-size: 0.85rem; max-width:280px;">Only cleared verified accounts can broadcast to Main Open Chat. Please open a user profile to send a <b>Private Message</b>.</p>
+                <p style="font-size: 0.85rem; max-width:280px;">Your account is currently Unverified. You cannot broadcast to Main Open Chat. Please click any user in the directory to begin a permissible Private Message.</p>
             </div>
         </div>
     </div>
 
-    <!-- ==================== INTERACTIVE USER PROFILE MODAL ==================== -->
     <div class="modal-mask hidden" id="profileModal">
         <div class="profile-modal">
             <div class="modal-header">
@@ -224,7 +217,6 @@
                     <span id="modalFilterStatus" style="color:var(--text-muted);">None</span>
                 </div>
                 
-                <!-- Admin Explicit Verification Switch Control Toggle -->
                 <button class="modal-action-btn btn-pvt hidden" id="modalAdminVerifyToggleBtn" onclick="adminToggleUserVerification()" style="background:#10b981; margin-bottom: 4px;">
                     ✓ Toggle Account Verification Status
                 </button>
@@ -242,7 +234,6 @@
         </div>
     </div>
 
-    <!-- ==================== LOGIC PLATFORM ENGINE ==================== -->
     <script>
         let currentRole = 'user';
         let authMode = 'login';
@@ -253,10 +244,37 @@
 
         const SECURITY_PIN = "1248";
 
+        // Persistent State Database Array including 25 Core Dummy Mixed Tamil Users
         const userDatabase = {
             users: [
                 { username: "Renuka", password: "123", status: "unverified" }, 
-                { username: "Sarah", password: "123", status: "verified" }
+                { username: "Sarah", password: "123", status: "verified" },
+                // 25 Mixed Male & Female Dummy Tamil Users
+                { username: "Anbarasan", password: "123", status: "verified" },
+                { username: "Kavitha", password: "123", status: "unverified" },
+                { username: "Muthu", password: "123", status: "verified" },
+                { username: "Thamarai", password: "123", status: "unverified" },
+                { username: "Karthik", password: "123", status: "verified" },
+                { username: "Malathi", password: "123", status: "unverified" },
+                { username: "Selvam", password: "123", status: "verified" },
+                { username: "Priya_Dharshini", password: "123", status: "verified" },
+                { username: "Senthil", password: "123", status: "unverified" },
+                { username: "Abirami", password: "123", status: "verified" },
+                { username: "Vignesh", password: "123", status: "verified" },
+                { username: "Meenakshi", password: "123", status: "unverified" },
+                { username: "Ilango", password: "123", status: "verified" },
+                { username: "Deepa", password: "123", status: "verified" },
+                { username: "Saravanan", password: "123", status: "unverified" },
+                { username: "Nandhini", password: "123", status: "verified" },
+                { username: "Rajesh", password: "123", status: "verified" },
+                { username: "Bhavani", password: "123", status: "unverified" },
+                { username: "Murugan", password: "123", status: "verified" },
+                { username: "Janani", password: "123", status: "verified" },
+                { username: "Kathiravan", password: "123", status: "unverified" },
+                { username: "Sangeetha", password: "123", status: "verified" },
+                { username: "Arun_Kumar", password: "123", status: "verified" },
+                { username: "Divya", password: "123", status: "unverified" },
+                { username: "Pandian", password: "123", status: "verified" }
             ],
             admins: [
                 { username: "Admin", password: "123", status: "admin" }
@@ -278,6 +296,11 @@
         ];
         
         let privateInboxDatabase = {};
+
+        // Calculate total online headcount safely across all dynamic lists
+        function getOnlineCount() {
+            return userDatabase.users.length + userDatabase.admins.length + premiumBots.length + modAccounts.length;
+        }
 
         function toggleMobileSidebar() {
             document.getElementById('sidebarMenu').classList.toggle('mobile-open');
@@ -347,7 +370,7 @@
 
                     const newSecuredUser = { username: usernameInput, password: passwordInput, status: selectedTier };
                     userDatabase.admins.push(newSecuredUser);
-                    showNotification('success', `${selectedTier === 'admin' ? 'Admin' : 'Forever Premium'} profile created!`);
+                    showNotification('success', `${selectedTier === 'admin' ? 'Admin' : 'Forever Premium'} profile created successfully!`);
                 } else {
                     const newAccount = { username: usernameInput, password: passwordInput, status: 'unverified' };
                     userDatabase.users.push(newAccount);
@@ -431,14 +454,13 @@
                 ignoreActionBtn.classList.remove('hidden');
                 blockActionBtn.classList.remove('hidden');
 
-                // Enforced Condition: Normal users can message anyone APART from verified users. 
-                const isTargetVerifiedUser = (accountObj.status === 'verified');
-                const isCurrentUserNormal = (currentUser.status === 'unverified' || currentUser.status === 'verified');
+                // ENFORCED RULE MATCH: Unverified accounts can ONLY message Mod, Admin, or Premium users.
+                const isTargetPrivileged = (accountObj.status === 'premium' || accountObj.status === 'admin' || accountObj.status === 'mod' || username === 'Admin');
                 
-                if (isCurrentUserNormal && isTargetVerifiedUser) {
+                if (currentUser.status === 'unverified' && !isTargetPrivileged) {
                     pvtActionBtn.innerText = "🔒 Messaging Restricted";
                     pvtActionBtn.style.background = "#475569";
-                    pvtActionBtn.onclick = function() { alert("Normal users cannot message regular verified users. You can message mods, premium users, or unverified users."); };
+                    pvtActionBtn.onclick = function() { alert("Unverified users can only send messages to Mods, Admins, or Premium users."); };
                 } else {
                     pvtActionBtn.innerText = "💬 Private Message (1-to-1)";
                     pvtActionBtn.style.background = "var(--user-color)";
@@ -502,122 +524,93 @@
             renderMessages();
         }
 
-        /* --- RENDER SIDEBAR USER LIST --- */
+        /* --- SIDEBAR ACTIVE SYSTEM DIRECTORY (ALL USERS & LIVE COUNT VISIBLE TO EVERYONE) --- */
         function renderUserSidePanel() {
             const listContainer = document.getElementById('usersListContainer');
             const titleContainer = document.getElementById('userListTitle');
             listContainer.innerHTML = '';
 
-            if (currentUser.status === 'admin') {
-                if (activeRoom === 'main') {
-                    titleContainer.innerText = "Admin Account Management View";
-                    userDatabase.users.forEach(user => {
-                        listContainer.innerHTML += `
-                            <div class="user-item" onclick="openProfileModal('${user.username}', 'users')">
-                                <div class="status-dot"></div>
-                                <span>${user.username}</span>
-                                <span class="badge verified" style="background:${user.status === 'unverified'?'#b91c1c':'#10b981'}">${user.status.toUpperCase()}</span>
-                            </div>`;
-                    });
-                    userDatabase.admins.forEach(adm => {
-                        if (adm.username === currentUser.username) return;
-                        listContainer.innerHTML += `
-                            <div class="user-item" onclick="openProfileModal('${adm.username}', 'users')">
-                                <div class="status-dot" style="background:var(--gold)"></div>
-                                <span>${adm.username}</span>
-                                <span class="badge premium">${adm.status.toUpperCase()}</span>
-                            </div>`;
-                    });
-                } else {
-                    titleContainer.innerText = "System Intercept Logs";
-                    const combined = [...userDatabase.users, ...userDatabase.admins, ...premiumBots, ...modAccounts];
-                    combined.forEach(acc => {
-                        if (acc.username === currentUser.username) return;
-                        const isActive = (activeInboxPartner === acc.username) ? 'active' : '';
-                        listContainer.innerHTML += `
-                            <div class="user-item ${isActive}" onclick="selectInboxPartner('${acc.username}')">
-                                <div class="status-dot" style="background:var(--gold);"></div>
-                                <span>${acc.username}</span>
-                                <span class="badge verified">LOGS</span>
-                            </div>`;
-                    });
-                }
-            } else {
-                if (activeRoom === 'main') {
-                    titleContainer.innerText = "Active Channels (Tap to View)";
-                    
-                    listContainer.innerHTML = `
-                        <div class="user-item" style="background: rgba(59, 130, 246, 0.1)">
-                            <div class="status-dot" style="background:#3b82f6;"></div>
-                            <span>${currentUser.username} (You)</span>
-                            <span class="badge verified">${currentUser.status.toUpperCase()}</span>
+            const liveHeadcount = getOnlineCount();
+
+            if (activeRoom === 'main') {
+                titleContainer.innerHTML = `Online Directory 🟢 <b>(${liveHeadcount} Live)</b>`;
+                
+                // Add current logged-in user at the top
+                listContainer.innerHTML = `
+                    <div class="user-item" style="background: rgba(59, 130, 246, 0.1)">
+                        <div class="status-dot" style="background:#3b82f6;"></div>
+                        <span>${currentUser.username} (You)</span>
+                        <span class="badge verified">${currentUser.status.toUpperCase()}</span>
+                    </div>`;
+                
+                // Render Admins & Premiums
+                userDatabase.admins.forEach(adm => {
+                    if(adm.username === currentUser.username) return;
+                    listContainer.innerHTML += `
+                        <div class="user-item" onclick="openProfileModal('${adm.username}', 'users')">
+                            <div class="status-dot" style="background: var(--gold)"></div>
+                            <span>${adm.username}</span>
+                            <span class="badge premium">${adm.status.toUpperCase()}</span>
                         </div>`;
-                    
-                    userDatabase.admins.forEach(adm => {
-                        if(adm.username === currentUser.username) return;
-                        listContainer.innerHTML += `
-                            <div class="user-item" onclick="openProfileModal('${adm.username}', 'users')">
-                                <div class="status-dot" style="background: var(--gold)"></div>
-                                <span>${adm.username}</span>
-                                <span class="badge premium">PREMIUM</span>
-                            </div>`;
-                    });
+                });
 
-                    modAccounts.forEach(mod => {
-                        listContainer.innerHTML += `
-                            <div class="user-item" onclick="openProfileModal('${mod.username}', 'modAccounts')">
-                                <div class="status-dot"></div>
-                                <span>${mod.username}</span>
-                                <span class="badge verified" style="background:var(--user-color)">MOD</span>
-                            </div>`;
-                    });
-                    
-                    premiumBots.forEach(bot => {
-                        listContainer.innerHTML += `
-                            <div class="user-item" onclick="openProfileModal('${bot.username}', 'premiumBots')">
-                                <div class="status-dot"></div>
-                                <span>${bot.username}</span>
-                                <span class="badge premium">PREMIUM</span>
-                            </div>`;
-                    });
+                // Render Mods
+                modAccounts.forEach(mod => {
+                    listContainer.innerHTML += `
+                        <div class="user-item" onclick="openProfileModal('${mod.username}', 'modAccounts')">
+                            <div class="status-dot"></div>
+                            <span>${mod.username}</span>
+                            <span class="badge verified" style="background:var(--user-color)">MOD</span>
+                        </div>`;
+                });
+                
+                // Render Premium bots
+                premiumBots.forEach(bot => {
+                    listContainer.innerHTML += `
+                        <div class="user-item" onclick="openProfileModal('${bot.username}', 'premiumBots')">
+                            <div class="status-dot"></div>
+                            <span>${bot.username}</span>
+                            <span class="badge premium">PREMIUM</span>
+                        </div>`;
+                });
 
-                    userDatabase.users.forEach(u => {
-                        if (u.username === currentUser.username) return;
-                        listContainer.innerHTML += `
-                            <div class="user-item" onclick="openProfileModal('${u.username}', 'users')">
-                                <div class="status-dot"></div>
-                                <span>${u.username}</span>
-                                <span class="badge verified" style="background:#475569">${u.status.toUpperCase()}</span>
-                            </div>`;
-                    });
-                } else {
-                    titleContainer.innerText = "Select Active Private Loop";
+                // Render Standard/Normal Tamil Users
+                userDatabase.users.forEach(u => {
+                    if (u.username === currentUser.username) return;
+                    listContainer.innerHTML += `
+                        <div class="user-item" onclick="openProfileModal('${u.username}', 'users')">
+                            <div class="status-dot"></div>
+                            <span>${u.username}</span>
+                            <span class="badge verified" style="background:${u.status === 'unverified' ? '#b91c1c' : '#475569'}">${u.status.toUpperCase()}</span>
+                        </div>`;
+                });
+            } else {
+                titleContainer.innerText = (currentUser.status === 'admin') ? `Tracking Logs (${liveHeadcount} Live)` : `Select Inbox Loop (${liveHeadcount} Live)`;
+                
+                const validTargets = [...userDatabase.admins, ...userDatabase.users, ...premiumBots, ...modAccounts];
+                validTargets.forEach(tgt => {
+                    if (tgt.username === currentUser.username) return;
                     
-                    const validTargets = [...userDatabase.admins, ...userDatabase.users, ...premiumBots, ...modAccounts];
-                    validTargets.forEach(tgt => {
-                        if (tgt.username === currentUser.username) return;
-                        
-                        // Condition Guard: Normal users hide target verified configurations from their layout selection panels entirely
-                        const isTargetVerified = (tgt.status === 'verified');
-                        const isCurrentUserNormal = (currentUser.status === 'unverified' || currentUser.status === 'verified');
-                        
-                        if (isCurrentUserNormal && isTargetVerified) return;
+                    // Filter checking for Inbox list alignment: Unverified users hide regular users to avoid invalid interaction loops
+                    if (currentUser.status === 'unverified') {
+                        const isTargetPrivileged = (tgt.status === 'premium' || tgt.status === 'admin' || tgt.status === 'mod' || tgt.username === 'Admin');
+                        if (!isTargetPrivileged) return;
+                    }
 
-                        const isActive = (activeInboxPartner === tgt.username) ? 'active' : '';
-                        listContainer.innerHTML += `
-                            <div class="user-item ${isActive}" onclick="selectInboxPartner('${tgt.username}')">
-                                <div class="status-dot"></div>
-                                <span>${tgt.username}</span>
-                                <span class="badge premium" style="background:var(--user-color)">CHAT</span>
-                            </div>`;
-                    });
-                }
+                    const isActive = (activeInboxPartner === tgt.username) ? 'active' : '';
+                    listContainer.innerHTML += `
+                        <div class="user-item ${isActive}" onclick="selectInboxPartner('${tgt.username}')">
+                            <div class="status-dot"></div>
+                            <span>${tgt.username}</span>
+                            <span class="badge premium" style="background:var(--user-color)">CHAT</span>
+                        </div>`;
+                });
             }
         }
 
         function selectInboxPartner(partnerName) {
             activeInboxPartner = partnerName;
-            document.getElementById('activeRoomTitle').innerText = (currentUser.status === 'admin') ? `🔍 Loop: ${partnerName}` : `📥 1-to-1 with ${partnerName}`;
+            document.getElementById('activeRoomTitle').innerText = (currentUser.status === 'admin') ? `🔍 Log Viewer: ${partnerName}` : `📥 Private Loop: ${partnerName}`;
             renderUserSidePanel();
             renderMessages();
             if (window.innerWidth <= 768) toggleMobileSidebar();
@@ -642,7 +635,10 @@
                     lockedView.classList.add('hidden');
                 }
             } else {
-                headerTitle.innerText = (currentUser.status === 'admin') ? `🔍 Logs Loop: ${activeInboxPartner}` : `📥 1-to-1 with ${activeInboxPartner}`;
+                if (!activeInboxPartner) {
+                    activeInboxPartner = currentUser.status === 'admin' ? 'Renuka' : 'Admin';
+                }
+                headerTitle.innerText = (currentUser.status === 'admin') ? `🔍 Log Viewer: ${activeInboxPartner}` : `📥 Private Loop: ${activeInboxPartner}`;
                 activeView.classList.remove('hidden');
                 lockedView.classList.add('hidden');
             }
@@ -668,20 +664,18 @@
                 if (currentUser.status === 'admin') {
                     let totalInterventions = [];
                     
-                    // Look through all chat combinations to map messages involving this active text tracker
                     Object.keys(privateInboxDatabase).forEach(convoKey => {
                         privateInboxDatabase[convoKey].forEach(m => {
-                            if (convoKey === activeInboxPartner || m.sender === activeInboxPartner) {
+                            if (convoKey.includes(activeInboxPartner) || m.sender === activeInboxPartner) {
                                 totalInterventions.push(m);
                             }
                         });
                     });
 
-                    // De-duplicate any tracking overlays that fall out of order
                     totalInterventions = totalInterventions.filter((v, i, a) => a.findIndex(t => (t.text === v.text && t.sender === v.sender)) === i);
 
                     if (totalInterventions.length === 0) {
-                        container.innerHTML = `<div class="message system">No archived chat messages found in this user's tracking channel.</div>`;
+                        container.innerHTML = `<div class="message system">No archived chat messages found for this user.</div>`;
                         return;
                     }
 
@@ -693,7 +687,6 @@
                             </div>`;
                     });
                 } else {
-                    // Create chat tracking instance if none exists
                     const conversationKey = [currentUser.username, activeInboxPartner].sort().join('%%');
                     if (!privateInboxDatabase[conversationKey]) privateInboxDatabase[conversationKey] = [];
                     
@@ -719,6 +712,7 @@
             const newMsg = { sender: currentUser.username, text: text };
 
             if (activeRoom === 'main') {
+                if (currentUser.status === 'unverified') return; 
                 globalMainMessages.push(newMsg);
                 renderMessages();
             } else {
@@ -733,7 +727,6 @@
                     return;
                 }
 
-                // Echo bot response simulation logic for testing
                 const currentPartner = activeInboxPartner;
                 const isBot = premiumBots.some(b => b.username === currentPartner);
                 if (isBot) {
